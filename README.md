@@ -35,14 +35,11 @@ pip install -r requirements.txt
 |-- README.md
 |-- requirements.txt
 |-- scripts/
-|   |-- collect_documents.py
-|   |-- collect_queries.py
 |   |-- generate_features.py
 |   |-- patch.py
 |   |-- run_patch.sh
 |-- utils/
-    |-- __pycache__/
-    |   |-- utils.cpython-311.pyc
+    |-- feature_importance_utils.py
     |-- utils.py
 ```
 
