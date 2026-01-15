@@ -9,7 +9,10 @@ from transformers import AutoTokenizer, AutoModelForCausalLM
 from functools import partial
 from pyserini.index.lucene import LuceneIndexReader as IndexReader
 from tqdm.auto import tqdm
+import torch
 tqdm.pandas()
+
+DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
 
 
 QUERY_DOC_PAIRS_PATH = "./data/diagnostic_dataset/TFC1-data.tsv.gz"
@@ -42,7 +45,7 @@ def compute_document_features(
     dataframe = pd.concat([dataframe, readability_df], axis=1)
 
     print(f"Computing decoder perplexity{suffix}...")
-    # dataframe['decoder_perplexity' + suffix] = calculate_perplexity(dataframe, model, tokenizer)
+    dataframe['decoder_perplexity' + suffix] = calculate_perplexity(dataframe, model, tokenizer, text_column='text_tokenized' + suffix)
 
     return dataframe
 
@@ -63,7 +66,7 @@ if __name__ == "__main__":
     # Initialize GPT-2 model and tokenizer for perplexity calculations
     model_name = 'gpt2'
     tokenizer = AutoTokenizer.from_pretrained(model_name)
-    model = AutoModelForCausalLM.from_pretrained(model_name)
+    model = AutoModelForCausalLM.from_pretrained(model_name).to(DEVICE)
     if model_name == 'gpt2':
         tokenizer.pad_token = tokenizer.eos_token
         model.config.pad_token_id = tokenizer.eos_token_id

@@ -52,7 +52,7 @@ def get_tfidf(text, reader):
     tf = Counter(terms)
     num_docs = reader.stats()['documents']
     
-    tfidf_scores = []
+    tfidf_scores = {}
     for term, term_count in tf.items():
         try:
             df = reader.get_term_counts(term)[0]
@@ -61,7 +61,7 @@ def get_tfidf(text, reader):
         if df > 0:
             tf = term_count / len(terms)
             idf = math.log(num_docs / df)
-            tfidf_scores.append(tf * idf)
+            tfidf_scores[term] = tf * idf
     return tfidf_scores
 
 
@@ -94,12 +94,12 @@ def get_tfidf_injected_term(text, term, reader):
 
 def get_mean_tfidf(text, reader):
     tfidf = get_tfidf(text, reader)
-    return np.mean(tfidf) if tfidf else 0.0
+    return np.mean(list(tfidf.values())) if tfidf else 0.0
 
 
 def get_std_tfidf(text, reader):
     tfidf = get_tfidf(text, reader)
-    return np.std(tfidf) if tfidf else 0.0
+    return np.std(list(tfidf.values())) if tfidf else 0.0
 
 
 def get_readability_scores(text, suffix=''):
@@ -167,6 +167,7 @@ def compute_perturbation_featues(data, tokenizer):
     data['idf_injected_term'] = data['injected_term'].apply(lambda x: get_ifd_injected_term(x, reader))
     data['tf_injected_term'] = data.apply(lambda x: get_tf_injected_term(x['text_tokenized'], x['injected_term']), axis=1)
     data['tfidf_injected_term'] = data.apply(lambda x: get_tfidf_injected_term(x['text_tokenized'], x['injected_term'], reader), axis=1)
+    # data['tfidf_injected_term'] = data['tf_injected_term'] * data['idf_injected_term']
     data['injected_term_token_len'] = data['injected_term'].apply(lambda x: len(tokenizer(x, add_special_tokens=False)['input_ids']))
     
     return data
